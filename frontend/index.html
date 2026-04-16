@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistema de Reservas</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      text-align: center;
+      width: 300px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #00c6ff;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #0072ff;
+    }
+
+    .msg {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Reservas</h1>
+
+    <input type="text" id="nombre" placeholder="Tu nombre">
+    <input type="date" id="fecha">
+
+    <button onclick="crearReserva()">Reservar</button>
+
+    <div class="msg" id="mensaje"></div>
+  </div>
+
+  <script>
+    function crearReserva() {
+      const nombre = document.getElementById("nombre").value;
+      const fecha = document.getElementById("fecha").value;
+
+	fetch("http://localhost:3000/reserva")
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ nombre, fecha })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("mensaje").innerText = data.mensaje;
+      })
+      .catch(err => {
+        document.getElementById("mensaje").innerText = "Error al conectar";
+        console.error(err);
+      });
+    }
+  </script>
+
+</body>
+</html>

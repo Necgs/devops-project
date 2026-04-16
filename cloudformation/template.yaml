@@ -1,0 +1,20 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0c55b159cbfafe1f0
+      InstanceType: t2.micro
+
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+
+# IMPORTANTE:
+# Security Group debe permitir:
+# - Puerto 22 (SSH)
+# - Puerto 3000 (Backend)
+# - Puerto 8080 (Frontend)
+# Ejemplo:
+# No usar 0.0.0.0/0 en producción porque expone todo internet
