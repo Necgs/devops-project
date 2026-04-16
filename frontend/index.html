@@ -165,7 +165,11 @@ function crearReserva() {
   const nombre = document.getElementById("nombre").value;
   const fecha = document.getElementById("fecha").value;
 
-  fetch("http://localhost:3000/reserva", {
+  const API_URL = window.location.hostname === "localhost"
+    ? "http://localhost:3000"
+    : `http://${window.location.hostname}:3000`;
+
+  fetch(`${API_URL}/reserva`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -178,6 +182,7 @@ function crearReserva() {
   })
   .catch(err => {
     document.getElementById("mensaje").innerText = "Error al conectar";
+    console.error(err);
   });
 }
 </script>
