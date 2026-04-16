@@ -1,31 +1,58 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
+const mongoose = require("mongoose");
 
 const app = express();
 app.use(express.json());
 
 // ===============================
-// CONFIGURACIÓN DE LOGS
+// LOGS
 // ===============================
 
-// Carpeta de logs dentro del backend
 const logDir = path.join(__dirname, "logs");
 
-// Crear carpeta si no existe (IMPORTANTE para Docker/AWS)
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
 }
 
-// Archivo de log
 const logPath = path.join(logDir, "app.log");
 
-// Función de logs
 function writeLog(level, message) {
   const time = new Date().toISOString();
   const log = `[${time}] ${level}: ${message}\n`;
   fs.appendFileSync(logPath, log);
 }
+
+
+// ===============================
+// CONEXIÓN A MONGO
+// ===============================
+
+const MONGO_URL = "mongodb://mongo:27017/devops";
+
+mongoose.connect(MONGO_URL, {
+  serverSelectionTimeoutMS: 5000, // evita que se quede colgado
+})
+.then(() => {
+  console.log("🟢 MongoDB conectado correctamente");
+  writeLog("INFO", "MongoDB conectado correctamente");
+})
+.catch((err) => {
+  console.log("🔴 ERROR CONECTANDO A MONGO:", err.message);
+  writeLog("ERROR", "Mongo error: " + err.message);
+});
+
+// ===============================
+// MODELO RESERVA
+// ===============================
+
+const ReservaSchema = new mongoose.Schema({
+  nombre: String,
+  fecha: String,
+});
+
+const Reserva = mongoose.model("Reserva", ReservaSchema);
 
 // ===============================
 // RUTAS
@@ -38,25 +65,28 @@ app.get("/", (req, res) => {
 });
 
 // Crear reserva
-app.post("/reserva", (req, res) => {
+app.post("/reserva", async (req, res) => {
   try {
     const { nombre, fecha } = req.body;
 
     if (!nombre || !fecha) {
-      writeLog("WARN", "Intento de reserva con datos incompletos");
+      writeLog("WARN", "Reserva con datos incompletos");
       return res.status(400).json({
         mensaje: "Faltan datos (nombre o fecha)",
       });
     }
 
-    writeLog("INFO", `Reserva creada para ${nombre} en ${fecha}`);
+    const nuevaReserva = new Reserva({ nombre, fecha });
+    await nuevaReserva.save();
+
+    writeLog("INFO", `Reserva guardada: ${nombre} - ${fecha}`);
 
     res.json({
       mensaje: "Reserva guardada correctamente",
-      data: { nombre, fecha },
+      data: nuevaReserva,
     });
   } catch (error) {
-    writeLog("ERROR", `Error al crear reserva: ${error.message}`);
+    writeLog("ERROR", error.message);
     res.status(500).json({
       mensaje: "Error en el servidor",
     });

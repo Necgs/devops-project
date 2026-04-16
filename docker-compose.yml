@@ -1,19 +1,31 @@
-version: "3"
+version: "3.8"
 
 services:
+
   backend:
     build: ./backend
+    container_name: backend-app
     ports:
       - "3000:3000"
     volumes:
-      - ./logs:/app/logs
+      - ./backend/logs:/app/logs
+    depends_on:
+      - mongo
 
   frontend:
     build: ./frontend
+    container_name: frontend-app
     ports:
       - "8080:80"
 
-  db:
-    image: mongo
+  mongo:
+    image: mongo:6
+    container_name: mongo-db
+    restart: always
     ports:
       - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
