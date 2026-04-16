@@ -1,100 +1,186 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Sistema de Reservas</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
+<meta charset="UTF-8">
+<title>Museo MARCO - Monterrey</title>
 
-    .container {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 30px;
-      border-radius: 15px;
-      backdrop-filter: blur(10px);
-      text-align: center;
-      width: 300px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    }
+<style>
+body {
+  margin: 0;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  background: #f4f4f4;
+}
 
-    h1 {
-      margin-bottom: 20px;
-    }
+/* HEADER */
+header {
+  background: #000;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  letter-spacing: 2px;
+}
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 8px;
-    }
+/* NAV */
+nav {
+  display: flex;
+  justify-content: center;
+  background: #111;
+}
 
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #00c6ff;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-    }
+nav button {
+  background: none;
+  border: none;
+  color: white;
+  padding: 15px 25px;
+  cursor: pointer;
+  font-size: 14px;
+}
 
-    button:hover {
-      background: #0072ff;
-    }
+nav button:hover {
+  background: #333;
+}
 
-    .msg {
-      margin-top: 15px;
-      font-size: 14px;
-    }
+/* SECCIONES */
+.section {
+  display: none;
+  padding: 30px;
+  max-width: 900px;
+  margin: auto;
+}
 
-  </style>
+.active {
+  display: block;
+}
+
+/* INFO */
+.info-box {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* RESERVA */
+.form-box {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  max-width: 400px;
+  margin: auto;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+button.submit {
+  width: 100%;
+  padding: 12px;
+  background: black;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.msg {
+  margin-top: 15px;
+}
+
+</style>
 </head>
+
 <body>
 
-  <div class="container">
-    <h1>Reservas</h1>
+<header>
+  MUSEO MARCO
+</header>
 
-    <input type="text" id="nombre" placeholder="Tu nombre">
+<nav>
+  <button onclick="mostrarSeccion('info')">Información</button>
+  <button onclick="mostrarSeccion('reserva')">Reservaciones</button>
+</nav>
+
+<!-- INFO -->
+<div id="info" class="section active">
+  <div class="info-box">
+    <h2>Museo de Arte Contemporáneo de Monterrey</h2>
+
+    <p>
+      El MARCO es uno de los centros culturales más importantes de América Latina,
+      enfocado en la difusión del arte contemporáneo.
+    </p>
+
+    <h3>📍 Ubicación</h3>
+    <p>Centro de Monterrey, Nuevo León</p>
+
+    <h3>🕒 Horarios</h3>
+    <p>
+      Martes a domingo: 10:00 - 18:00 <br>
+      Miércoles: 10:00 - 20:00
+    </p>
+
+    <h3>💰 Costos</h3>
+    <p>
+      General: $90 <br>
+      Estudiantes: $60 <br>
+      Miércoles y domingo: Entrada gratuita
+    </p>
+
+    <h3>🎨 Descripción</h3>
+    <p>
+      Inaugurado en 1991, el museo cuenta con múltiples salas de exhibición
+      permanentes y temporales, promoviendo el arte contemporáneo en México y Latinoamérica.
+    </p>
+  </div>
+</div>
+
+<!-- RESERVA -->
+<div id="reserva" class="section">
+  <div class="form-box">
+    <h2>Reservar visita</h2>
+
+    <input type="text" id="nombre" placeholder="Nombre del visitante">
     <input type="date" id="fecha">
 
-    <button onclick="crearReserva()">Reservar</button>
+    <button class="submit" onclick="crearReserva()">Reservar</button>
 
     <div class="msg" id="mensaje"></div>
   </div>
+</div>
 
-  <script>
-    function crearReserva() {
-      const nombre = document.getElementById("nombre").value;
-      const fecha = document.getElementById("fecha").value;
+<script>
+function mostrarSeccion(id) {
+  document.querySelectorAll(".section").forEach(sec => {
+    sec.classList.remove("active");
+  });
+  document.getElementById(id).classList.add("active");
+}
 
-	fetch("http://localhost:3000/reserva")
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ nombre, fecha })
-      })
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("mensaje").innerText = data.mensaje;
-      })
-      .catch(err => {
-        document.getElementById("mensaje").innerText = "Error al conectar";
-        console.error(err);
-      });
-    }
-  </script>
+function crearReserva() {
+  const nombre = document.getElementById("nombre").value;
+  const fecha = document.getElementById("fecha").value;
+
+  fetch("http://localhost:3000/reserva", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ nombre, fecha })
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("mensaje").innerText = data.mensaje;
+  })
+  .catch(err => {
+    document.getElementById("mensaje").innerText = "Error al conectar";
+  });
+}
+</script>
 
 </body>
 </html>
