@@ -1,45 +1,72 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Proyecto DevOps - EC2 + S3 para Web App
+Description: Proyecto DevOps - EC2 Web App con Docker (Node + Mongo + Frontend)
 
 Resources:
 
-  MyBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: devops-project-bucket-logs-123456
-
+  # =========================
+  # SECURITY GROUP
+  # =========================
   MySecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Allow HTTP, SSH and App ports
+      GroupDescription: Allow SSH, Backend and Frontend access
+
       SecurityGroupIngress:
+
+        # SSH
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
 
+        # Backend
         - IpProtocol: tcp
           FromPort: 3000
           ToPort: 3000
           CidrIp: 0.0.0.0/0
 
+        # Frontend
         - IpProtocol: tcp
           FromPort: 8080
           ToPort: 8080
           CidrIp: 0.0.0.0/0
 
+  # =========================
+  # EC2 INSTANCE
+  # =========================
   MyEC2Instance:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
-      ImageId: ami-0c02fb55956c7d316  # Amazon Linux 2 (región us-east-1)
-      SecurityGroups:
+      ImageId: ami-0c02fb55956c7d316
+
+      SecurityGroupIds:
         - !Ref MySecurityGroup
+
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          yum update -y
+          yum install -y git docker
+          service docker start
+          usermod -aG docker ec2-user
+
+          # Clonar repo
+          git clone https://github.com/TU_USUARIO/devops-project.git
+          cd devops-project
+
+          # Levantar app
+          docker compose up --build -d
+
       Tags:
         - Key: Name
           Value: DevOps-Project-EC2
 
 Outputs:
   InstancePublicIP:
-    Description: IP pública de la EC2
+    Description: Public IP of EC2
     Value: !GetAtt MyEC2Instance.PublicIp
+
+  AppURL:
+    Description: Frontend URL
+    Value: !Sub "http://${MyEC2Instance.PublicIp}:8080"
